@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: myapp-dev
+    container_name: myapp-web
+    volumes:
+      - .:/rails:cached
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/myapp_development
+    depends_on:
+      - db
+    tty: true
+    stdin_open: true
+
+  db:
+    image: postgres:16
+    container_name: myapp-db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+
+volumes:
+  db-data:

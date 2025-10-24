@@ -1,0 +1,27 @@
+# syntax=docker/dockerfile:1
+ARG RUBY_VERSION=3.3.4
+FROM ruby:$RUBY_VERSION-slim
+
+# 作業ディレクトリ
+WORKDIR /rails
+
+# 必要なパッケージをインストール
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+    build-essential curl libvips postgresql-client nodejs yarn && \
+    rm -rf /var/lib/apt/lists/*
+
+# Railsユーザーを作成（権限を安全に）
+RUN useradd rails -m
+USER rails
+
+# Bundlerキャッシュを利用
+COPY --chown=rails:rails Gemfile Gemfile.lock ./
+RUN bundle install
+
+# コード全体をコピー
+COPY --chown=rails:rails . .
+
+# 開発用コマンド（bin/dev）を使う
+EXPOSE 3000
+CMD ["bin/dev"]
