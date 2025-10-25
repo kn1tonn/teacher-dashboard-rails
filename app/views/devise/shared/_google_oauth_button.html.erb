@@ -1,0 +1,13 @@
+<%
+  button_classes = local_assigns.fetch(:button_class) do
+    "inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-indigo-300 hover:text-indigo-600"
+  end
+  button_label = local_assigns.fetch(:label, "Continue with Google")
+  submit_path = local_assigns.fetch(:path, user_google_oauth2_omniauth_authorize_path)
+%>
+
+<%= link_to submit_path,
+            data: { turbo: false },
+            class: button_classes do %>
+  <%= button_label %>
+<% end %>

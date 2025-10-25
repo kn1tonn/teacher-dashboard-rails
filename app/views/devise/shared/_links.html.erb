@@ -1,0 +1,100 @@
+<nav class="space-y-2">
+  <% session_path =
+       if respond_to?(:new_session_path, true)
+         public_send(:new_session_path, resource_name)
+       else
+         helper = "new_#{resource_name}_session_path"
+         main_app.respond_to?(helper, true) ? main_app.public_send(helper) : nil
+       end %>
+
+  <% registration_path =
+       if respond_to?(:new_registration_path, true)
+         public_send(:new_registration_path, resource_name)
+       else
+         helper = "new_#{resource_name}_registration_path"
+         main_app.respond_to?(helper, true) ? main_app.public_send(helper) : nil
+       end %>
+
+  <% password_path =
+       if respond_to?(:new_password_path, true)
+         public_send(:new_password_path, resource_name)
+       else
+         helper = "new_#{resource_name}_password_path"
+         main_app.respond_to?(helper, true) ? main_app.public_send(helper) : nil
+       end %>
+
+  <% confirmation_path =
+       if respond_to?(:new_confirmation_path, true)
+         public_send(:new_confirmation_path, resource_name)
+       else
+         helper = "new_#{resource_name}_confirmation_path"
+         main_app.respond_to?(helper, true) ? main_app.public_send(helper) : nil
+       end %>
+
+  <% unlock_path =
+       if respond_to?(:new_unlock_path, true)
+         public_send(:new_unlock_path, resource_name)
+       else
+         helper = "new_#{resource_name}_unlock_path"
+         main_app.respond_to?(helper, true) ? main_app.public_send(helper) : nil
+       end %>
+
+  <% if controller_name != "sessions" && session_path.present? %>
+    <div>
+      <%= link_to "Already have an account? Sign in",
+                  session_path,
+                  class: "text-indigo-600 hover:text-indigo-500" %>
+    </div>
+  <% end %>
+
+  <% if devise_mapping.registerable? && controller_name != "registrations" && registration_path.present? %>
+    <div>
+      <%= link_to "Need an account? Sign up",
+                  registration_path,
+                  class: "text-indigo-600 hover:text-indigo-500" %>
+    </div>
+  <% end %>
+
+  <% if devise_mapping.recoverable? && controller_name != "passwords" && controller_name != "registrations" && password_path.present? %>
+    <div>
+      <%= link_to "Forgot your password?",
+                  password_path,
+                  class: "text-indigo-600 hover:text-indigo-500" %>
+    </div>
+  <% end %>
+
+  <% if devise_mapping.confirmable? && controller_name != "confirmations" && confirmation_path.present? %>
+    <div>
+      <%= link_to "Didn't receive confirmation instructions?",
+                  confirmation_path,
+                  class: "text-indigo-600 hover:text-indigo-500" %>
+    </div>
+  <% end %>
+
+  <% if devise_mapping.lockable? && resource_class.unlock_strategy_enabled?(:email) && controller_name != "unlocks" && unlock_path.present? %>
+    <div>
+      <%= link_to "Didn't receive unlock instructions?",
+                  unlock_path,
+                  class: "text-indigo-600 hover:text-indigo-500" %>
+    </div>
+  <% end %>
+
+  <% if devise_mapping.omniauthable? %>
+    <% resource_class.omniauth_providers.each do |provider| %>
+      <% path_helper = "#{resource_name}_#{provider}_omniauth_authorize_path" %>
+      <% path =
+           if respond_to?(path_helper, true)
+             public_send(path_helper)
+           elsif main_app.respond_to?(path_helper, true)
+             main_app.public_send(path_helper)
+           end %>
+      <% next unless path %>
+      <div>
+        <%= render "devise/shared/google_oauth_button",
+                   label: "Continue with #{OmniAuth::Utils.camelize(provider)}",
+                   button_class: "inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-indigo-300 hover:text-indigo-600",
+                   path: path %>
+      </div>
+    <% end %>
+  <% end %>
+</nav>

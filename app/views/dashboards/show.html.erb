@@ -1,0 +1,5 @@
+<% if @dashboard_role == :teacher %>
+  <%= render partial: "dashboards/teacher" %>
+<% else %>
+  <%= render partial: "dashboards/student" %>
+<% end %>

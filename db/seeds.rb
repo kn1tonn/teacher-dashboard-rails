@@ -1,9 +1,26 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# frozen_string_literal: true
+
+if Rails.env.test?
+  puts "Skipping seed data in test environment."
+  return
+end
+
+puts "Seeding default users..."
+
+teacher = User.find_or_initialize_by(email: "teacher@example.com")
+teacher.attributes = {
+  name: "Teacher Sample",
+  password: "Password1!",
+  role: :teacher
+}
+teacher.save!
+
+student = User.find_or_initialize_by(email: "student@example.com")
+student.attributes = {
+  name: "Student Sample",
+  password: "Password1!",
+  role: :student
+}
+student.save!
+
+puts "Seeded teacher (#{teacher.email}) and student (#{student.email})."
