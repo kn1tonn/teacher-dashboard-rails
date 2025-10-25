@@ -7,6 +7,8 @@ services:
       dockerfile: Dockerfile.dev
     image: myapp-dev
     container_name: myapp-web
+    env_file:
+      - .env
     volumes:
       - .:/rails:cached
     ports:
