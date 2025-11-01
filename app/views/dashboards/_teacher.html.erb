@@ -5,7 +5,7 @@
       <p class="text-sm text-slate-600">Monitor submissions across your class and keep reviews flowing.</p>
     </div>
     <div class="flex flex-wrap gap-3 text-sm text-slate-500">
-      <span>Statuses: <%= Submission.statuses.keys.map { |status| submission_status_badge(status) }.join(" ").html_safe %></span>
+      <span>Statuses: <%= safe_join(Submission.statuses.keys.map { |status| submission_status_badge(status) }, " ") %></span>
     </div>
   </header>
 
