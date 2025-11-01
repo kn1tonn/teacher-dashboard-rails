@@ -12,10 +12,10 @@ require "omniauth/rails_csrf_protection"
 
 Devise.setup do |config|
   config.mailer_sender = ENV.fetch("DEFAULT_MAILER_SENDER", "no-reply@example.com")
-  require 'devise/orm/active_record'
-  config.case_insensitive_keys = [:email]
-  config.strip_whitespace_keys = [:email]
-  config.skip_session_storage = [:http_auth]
+  require "devise/orm/active_record"
+  config.case_insensitive_keys = [ :email ]
+  config.strip_whitespace_keys = [ :email ]
+  config.skip_session_storage = [ :http_auth ]
   config.stretches = Rails.env.test? ? 1 : 12
   config.reconfirmable = true
   config.expire_all_remember_me_on_sign_out = true
@@ -23,7 +23,7 @@ Devise.setup do |config|
   config.email_regexp = /\A[^@\s]+@[^@\s]+\z/
   config.reset_password_within = 6.hours
   config.sign_out_via = :delete
-  OmniAuth.config.allowed_request_methods = [:post]
+  OmniAuth.config.allowed_request_methods = [ :post ]
 
   google_client_id = ENV["GOOGLE_CLIENT_ID"] || Rails.application.credentials.dig(:google, :client_id)
   google_client_secret = ENV["GOOGLE_CLIENT_SECRET"] || Rails.application.credentials.dig(:google, :client_secret)
