@@ -1,0 +1,40 @@
+<section class="space-y-6">
+  <header class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900"><%= @student.name %></h1>
+      <p class="text-sm text-slate-600">Track submissions and feedback history for this learner.</p>
+    </div>
+    <%= link_to "Back to students", teacher_students_path, class: "text-sm font-medium text-indigo-600 hover:text-indigo-500" %>
+  </header>
+
+  <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-slate-100 text-sm">
+      <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-5 py-3">Task</th>
+          <th class="px-5 py-3">Status</th>
+          <th class="px-5 py-3">Updated</th>
+          <th class="px-5 py-3 text-right">Action</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <% if @submissions.blank? %>
+          <tr>
+            <td colspan="4" class="px-5 py-4 text-center text-slate-500">No submissions yet.</td>
+          </tr>
+        <% else %>
+          <% @submissions.each do |submission| %>
+            <tr class="hover:bg-slate-50">
+              <td class="px-5 py-4 font-medium text-slate-800"><%= submission.task.title %></td>
+              <td class="px-5 py-4"><%= submission_status_badge(submission.status) %></td>
+              <td class="px-5 py-4 text-slate-500"><%= time_ago_in_words(submission.updated_at) %> ago</td>
+              <td class="px-5 py-4 text-right">
+                <%= link_to "Review", teacher_submission_path(submission), class: "text-sm font-semibold text-indigo-600 hover:text-indigo-500" %>
+              </td>
+            </tr>
+          <% end %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</section>

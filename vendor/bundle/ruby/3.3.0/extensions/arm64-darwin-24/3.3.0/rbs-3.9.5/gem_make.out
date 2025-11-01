@@ -1,0 +1,28 @@
+current directory: /Users/koki/Documents/Rails/teacher-dashboard-rails/vendor/bundle/ruby/3.3.0/gems/rbs-3.9.5/ext/rbs_extension
+/Users/koki/.rbenv/versions/3.3.4/bin/ruby extconf.rb
+checking for whether -std=gnu99 is accepted as CFLAGS... yes
+creating Makefile
+
+current directory: /Users/koki/Documents/Rails/teacher-dashboard-rails/vendor/bundle/ruby/3.3.0/gems/rbs-3.9.5/ext/rbs_extension
+make DESTDIR\= sitearchdir\=./.gem.20251101-23095-g1e5d0 sitelibdir\=./.gem.20251101-23095-g1e5d0 clean
+
+current directory: /Users/koki/Documents/Rails/teacher-dashboard-rails/vendor/bundle/ruby/3.3.0/gems/rbs-3.9.5/ext/rbs_extension
+make DESTDIR\= sitearchdir\=./.gem.20251101-23095-g1e5d0 sitelibdir\=./.gem.20251101-23095-g1e5d0
+compiling ./../../src/constants.c
+compiling ./../../src/ruby_objs.c
+compiling ./../../src/util/rbs_constant_pool.c
+compiling lexer.c
+compiling lexstate.c
+compiling location.c
+compiling main.c
+compiling parser.c
+compiling parserstate.c
+compiling unescape.c
+linking shared-object rbs_extension.bundle
+
+current directory: /Users/koki/Documents/Rails/teacher-dashboard-rails/vendor/bundle/ruby/3.3.0/gems/rbs-3.9.5/ext/rbs_extension
+make DESTDIR\= sitearchdir\=./.gem.20251101-23095-g1e5d0 sitelibdir\=./.gem.20251101-23095-g1e5d0 install
+/usr/bin/install -c -m 0755 rbs_extension.bundle ./.gem.20251101-23095-g1e5d0
+
+current directory: /Users/koki/Documents/Rails/teacher-dashboard-rails/vendor/bundle/ruby/3.3.0/gems/rbs-3.9.5/ext/rbs_extension
+make DESTDIR\= sitearchdir\=./.gem.20251101-23095-g1e5d0 sitelibdir\=./.gem.20251101-23095-g1e5d0 clean
