@@ -1,27 +1,140 @@
-<section class="w-full space-y-6">
-  <header class="flex items-center justify-between">
+<section class="space-y-10">
+  <header class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
     <div>
       <h1 class="text-2xl font-semibold text-slate-900">Teacher Dashboard</h1>
-      <p class="text-sm text-slate-600">Snapshot of weekly submissions, AI checks, and pending reviews.</p>
+      <p class="text-sm text-slate-600">Monitor submissions across your class and keep reviews flowing.</p>
+    </div>
+    <div class="flex flex-wrap gap-3 text-sm text-slate-500">
+      <span>Statuses: <%= safe_join(Submission.statuses.keys.map { |status| submission_status_badge(status) }, " ") %></span>
     </div>
   </header>
 
-  <div class="grid gap-4 md:grid-cols-3">
-    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <p class="text-sm font-medium text-slate-500">Weekly Submission Rate</p>
-      <p class="mt-2 text-3xl font-semibold text-indigo-600">--%</p>
+  <section class="grid gap-4 md:grid-cols-3">
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-sm font-medium text-slate-500">Submissions this week</p>
+      <p class="mt-2 text-3xl font-semibold text-indigo-600"><%= @kpis[:weekly_submissions] %></p>
     </div>
-    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <p class="text-sm font-medium text-slate-500">AI Checks Waiting</p>
-      <p class="mt-2 text-3xl font-semibold text-indigo-600">--</p>
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-sm font-medium text-slate-500">AI checks waiting</p>
+      <p class="mt-2 text-3xl font-semibold text-indigo-600"><%= @kpis[:ai_pending] %></p>
     </div>
-    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <p class="text-sm font-medium text-slate-500">Teacher Reviews Pending</p>
-      <p class="mt-2 text-3xl font-semibold text-indigo-600">--</p>
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p class="text-sm font-medium text-slate-500">Reviews pending</p>
+      <p class="mt-2 text-3xl font-semibold text-indigo-600"><%= @kpis[:reviews_pending] %></p>
     </div>
-  </div>
+  </section>
 
-  <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-slate-600">
-    Configure KPI cards, filters, and submission overview in later phases.
-  </div>
+  <section class="space-y-4">
+    <div class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 class="text-lg font-semibold text-slate-900">Submission filters</h2>
+      <%= form_with url: dashboard_path, method: :get, local: true, class: "grid gap-3 md:grid-cols-4" do |f| %>
+        <div class="space-y-1">
+          <%= label_tag :status, "Status", class: "text-xs font-medium uppercase tracking-wide text-slate-500" %>
+          <%= select_tag :status,
+                         options_for_select([["All", ""]] + Submission.statuses.keys.map { |status| [status.humanize, status] }, @status_filter),
+                         class: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" %>
+        </div>
+        <div class="space-y-1">
+          <%= label_tag :task_id, "Task", class: "text-xs font-medium uppercase tracking-wide text-slate-500" %>
+          <%= select_tag :task_id,
+                         options_for_select([["All", ""]] + @tasks.map { |task| [task.title, task.id] }, @task_filter),
+                         class: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" %>
+        </div>
+        <div class="space-y-1">
+          <%= label_tag :timeframe, "Week", class: "text-xs font-medium uppercase tracking-wide text-slate-500" %>
+          <%= select_tag :timeframe,
+                         options_for_select([["This week", "this_week"], ["Last week", "last_week"], ["All", ""]], @timeframe),
+                         class: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" %>
+        </div>
+        <div class="flex items-end justify-end gap-2">
+          <%= link_to "Reset", dashboard_path, class: "rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-600 hover:text-slate-800" %>
+          <%= f.submit "Apply",
+                      class: "rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700" %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+        <h2 class="text-lg font-semibold text-slate-900">Recent submissions</h2>
+        <%= link_to "View all", teacher_submissions_path, class: "text-sm font-medium text-indigo-600 hover:text-indigo-500" %>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-slate-100 text-sm">
+          <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr>
+              <th class="px-5 py-3">Student</th>
+              <th class="px-5 py-3">Task</th>
+              <th class="px-5 py-3">Status</th>
+              <th class="px-5 py-3">Updated</th>
+              <th class="px-5 py-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            <% if @recent_submissions.blank? %>
+              <tr>
+                <td colspan="5" class="px-5 py-4 text-center text-slate-500">No submissions match the current filters.</td>
+              </tr>
+            <% else %>
+              <% @recent_submissions.each do |submission| %>
+                <tr class="hover:bg-slate-50">
+                  <td class="px-5 py-4 font-medium text-slate-800"><%= submission.user.name %></td>
+                  <td class="px-5 py-4 text-slate-600"><%= submission.task.title %></td>
+                  <td class="px-5 py-4"><%= submission_status_badge(submission.status) %></td>
+                  <td class="px-5 py-4 text-slate-500"><%= time_ago_in_words(submission.updated_at) %> ago</td>
+                  <td class="px-5 py-4 text-right">
+                    <%= link_to "Review", teacher_submission_path(submission), class: "text-sm font-semibold text-indigo-600 hover:text-indigo-500" %>
+                  </td>
+                </tr>
+              <% end %>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-semibold text-slate-900">Students overview</h2>
+      <%= link_to "Manage students", teacher_students_path, class: "text-sm font-medium text-indigo-600 hover:text-indigo-500" %>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <table class="min-w-full divide-y divide-slate-100 text-sm">
+        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-5 py-3">Student</th>
+            <th class="px-5 py-3">Pending</th>
+            <th class="px-5 py-3">Latest submission</th>
+            <th class="px-5 py-3 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <% if @students_snapshot.blank? %>
+            <tr>
+              <td colspan="4" class="px-5 py-4 text-center text-slate-500">No students have submitted work yet.</td>
+            </tr>
+          <% else %>
+            <% @students_snapshot.each do |row| %>
+              <tr class="hover:bg-slate-50">
+                <td class="px-5 py-4 font-medium text-slate-800"><%= row.student.name %></td>
+                <td class="px-5 py-4 text-slate-600"><%= row.pending_count %> pending review</td>
+                <td class="px-5 py-4 text-slate-500">
+                  <% if row.latest_submission.present? %>
+                    <%= row.latest_submission.task.title %> · <%= submission_status_badge(row.latest_submission.status) %>
+                  <% else %>
+                    No submissions yet
+                  <% end %>
+                </td>
+                <td class="px-5 py-4 text-right">
+                  <%= link_to "View", teacher_student_path(row.student), class: "text-sm font-semibold text-indigo-600 hover:text-indigo-500" %>
+                </td>
+              </tr>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
 </section>

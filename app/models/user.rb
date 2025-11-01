@@ -5,6 +5,10 @@ class User < ApplicationRecord
 
   enum :role, { student: 0, teacher: 1 }
 
+  has_many :submissions, dependent: :destroy
+  has_many :memos, dependent: :destroy
+  has_many :notifications, dependent: :destroy
+
   validates :name, presence: true
   validates :role, presence: true
 

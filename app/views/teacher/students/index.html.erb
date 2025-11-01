@@ -1,0 +1,48 @@
+<section class="space-y-6">
+  <header class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900">Students</h1>
+      <p class="text-sm text-slate-600">Overview of learner progress and pending reviews.</p>
+    </div>
+    <%= link_to "Back to dashboard", dashboard_path, class: "text-sm font-medium text-indigo-600 hover:text-indigo-500" %>
+  </header>
+
+  <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-slate-100 text-sm">
+      <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <tr>
+          <th class="px-5 py-3">Student</th>
+          <th class="px-5 py-3">Total submissions</th>
+          <th class="px-5 py-3">Pending review</th>
+          <th class="px-5 py-3">Last submission</th>
+          <th class="px-5 py-3 text-right">Action</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <% if @students.blank? %>
+          <tr>
+            <td colspan="5" class="px-5 py-4 text-center text-slate-500">No students found.</td>
+          </tr>
+        <% else %>
+          <% @students.each do |row| %>
+            <tr class="hover:bg-slate-50">
+              <td class="px-5 py-4 font-medium text-slate-800"><%= row.student.name %></td>
+              <td class="px-5 py-4 text-slate-600"><%= row.submission_count %></td>
+              <td class="px-5 py-4 text-slate-600"><%= row.pending_count %></td>
+              <td class="px-5 py-4 text-slate-500">
+                <% if row.last_submission_at.present? %>
+                  <%= time_ago_in_words(row.last_submission_at) %> ago
+                <% else %>
+                  None yet
+                <% end %>
+              </td>
+              <td class="px-5 py-4 text-right">
+                <%= link_to "View", teacher_student_path(row.student), class: "text-sm font-semibold text-indigo-600 hover:text-indigo-500" %>
+              </td>
+            </tr>
+          <% end %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</section>

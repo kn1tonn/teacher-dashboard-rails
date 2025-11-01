@@ -6,8 +6,12 @@
   submit_path = local_assigns.fetch(:path, user_google_oauth2_omniauth_authorize_path)
 %>
 
-<%= link_to submit_path,
-            data: { turbo: false },
-            class: button_classes do %>
-  <%= button_label %>
+<%= form_with url: submit_path,
+              method: :post,
+              data: { turbo: false },
+              authenticity_token: true,
+              local: true do %>
+  <button type="submit" class="<%= button_classes %>">
+    <%= button_label %>
+  </button>
 <% end %>

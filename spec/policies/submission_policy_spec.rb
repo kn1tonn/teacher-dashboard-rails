@@ -6,10 +6,10 @@ RSpec.describe SubmissionPolicy, type: :policy do
   subject(:policy) { described_class.new(user, submission) }
 
   let(:submission) { instance_double("Submission", user_id: owner.id) }
-  let(:owner) { create(:user) }
+  let(:owner) { create(:user, email: "policy-owner-#{SecureRandom.hex(4)}@example.com") }
 
   context "when user is a teacher" do
-    let(:user) { create(:user, :teacher) }
+    let(:user) { create(:user, :teacher, email: "policy-teacher-#{SecureRandom.hex(4)}@example.com") }
 
     it "permits show" do
       expect(policy).to be_show

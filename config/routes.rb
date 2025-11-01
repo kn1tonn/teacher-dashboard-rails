@@ -17,4 +17,20 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "dashboards#show"
   resource :dashboard, only: :show, controller: "dashboards"
+  resources :submissions, only: :create
+  resources :memos, only: :create
+
+  namespace :teacher do
+    resources :students, only: %i[index show]
+    resources :submissions, only: %i[index show update] do
+      resource :feedback, only: %i[create update]
+      resources :memos, only: :create
+    end
+  end
+
+  resources :notifications, only: %i[index update]
+
+  namespace :api do
+    resources :submissions, only: :index
+  end
 end

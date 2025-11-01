@@ -1,0 +1,151 @@
+<section class="space-y-6">
+  <header class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+    <div>
+      <p class="text-sm text-slate-500"><%= link_to "Submissions", teacher_submissions_path, class: "text-indigo-600 hover:text-indigo-500" %> · <%= @submission.user.name %></p>
+      <h1 class="text-2xl font-semibold text-slate-900"><%= @submission.task.title %></h1>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <%= submission_status_badge(@submission.status) %>
+      <% if @submission.submitted_at.present? %>
+        <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">Submitted <%= time_ago_in_words(@submission.submitted_at) %> ago</span>
+      <% end %>
+    </div>
+  </header>
+
+  <div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
+    <div class="space-y-6">
+      <section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-100 px-5 py-4">
+          <h2 class="text-lg font-semibold text-slate-900">Student submission</h2>
+        </div>
+        <div class="space-y-4 p-5 text-sm text-slate-700">
+          <% if @submission.content.present? %>
+            <div class="space-y-2">
+              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Written response</p>
+              <p class="whitespace-pre-wrap"><%= @submission.content %></p>
+            </div>
+          <% end %>
+
+          <% if @submission.content_url.present? %>
+            <div class="space-y-2">
+              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Submitted link</p>
+              <% if (safe_url = safe_external_url(@submission.content_url)) %>
+                <%= link_to safe_url, safe_url, target: "_blank", rel: "noopener", class: "text-indigo-600 hover:text-indigo-500" %>
+              <% else %>
+                <span class="text-slate-500">Provided link is invalid.</span>
+              <% end %>
+            </div>
+          <% end %>
+
+          <% if @submission.attachments.any? %>
+            <div class="space-y-2">
+              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Attachments</p>
+              <ul class="list-disc space-y-1 pl-5">
+                <% @submission.attachments.each do |attachment| %>
+                  <li>
+                    <%= link_to attachment.file, rails_blob_path(attachment.asset, disposition: "attachment"), class: "text-indigo-600 hover:text-indigo-500" %>
+                  </li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+        </div>
+      </section>
+
+      <section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-100 px-5 py-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <h2 class="text-lg font-semibold text-slate-900">Status management</h2>
+          <p class="text-xs text-slate-500">Move work through the review workflow.</p>
+        </div>
+        <div class="p-5">
+          <%= form_with model: [:teacher, @submission], local: true, class: "space-y-3" do |f| %>
+            <div class="space-y-1">
+              <%= f.label :status, "Status", class: "text-sm font-medium text-slate-700" %>
+              <%= f.select :status,
+                          options_for_select(Submission.statuses.keys.map { |status| [status.humanize, status] }, @submission.status),
+                          {},
+                          class: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" %>
+            </div>
+            <div class="flex justify-end gap-2">
+              <%= link_to "Reset", teacher_submission_path(@submission), class: "rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-600 hover:text-slate-800" %>
+              <%= f.submit "Update status", class: "rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700" %>
+            </div>
+          <% end %>
+          <p class="mt-2 text-xs text-slate-500">Allowed transitions follow the workflow: submitted → AI checking → AI checked → Teacher reviewed → Returned.</p>
+        </div>
+      </section>
+
+      <section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-100 px-5 py-4">
+          <h2 class="text-lg font-semibold text-slate-900">Teacher feedback</h2>
+        </div>
+        <div class="space-y-4 p-5">
+          <% if @submission.feedback&.published_at.present? %>
+            <div class="rounded-lg bg-emerald-50 p-4 text-sm text-emerald-900">
+              Published <%= @submission.feedback.published_at.strftime("%b %-d, %Y %H:%M") %>
+            </div>
+          <% end %>
+
+          <%= form_with model: [:teacher, @submission, @feedback], local: true, class: "space-y-3" do |f| %>
+            <div class="space-y-1">
+              <%= f.label :teacher_comment, "Feedback (rich text)", class: "text-sm font-medium text-slate-700" %>
+              <%= f.rich_text_area :teacher_comment, class: "min-h-[160px] rounded-lg border border-slate-300" %>
+            </div>
+            <div class="flex items-center justify-between">
+              <label class="flex items-center gap-2 text-sm text-slate-600">
+                <%= f.check_box :published, { checked: @feedback.published_at.present? }, "1", "0" %>
+                Publish feedback immediately
+              </label>
+              <%= f.submit "Save feedback", class: "rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500" %>
+            </div>
+          <% end %>
+        </div>
+      </section>
+    </div>
+
+    <aside class="space-y-6">
+      <section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-100 px-5 py-4">
+          <h2 class="text-lg font-semibold text-slate-900">Teacher memos</h2>
+        </div>
+        <div class="space-y-4 p-5 text-sm">
+          <% if @teacher_memos.blank? %>
+            <p class="text-slate-500">No private notes yet. Add context for future sessions.</p>
+          <% else %>
+            <ul class="space-y-3">
+              <% @teacher_memos.each do |memo| %>
+                <li class="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+                  <p class="whitespace-pre-wrap text-slate-700"><%= memo.body %></p>
+                  <p class="mt-1 text-xs text-slate-400">By <%= memo.user.name %> · <%= time_ago_in_words(memo.created_at) %> ago</p>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+
+          <%= form_with model: [:teacher, @submission, Memo.new], url: teacher_submission_memos_path(@submission), local: true, class: "space-y-3" do |f| %>
+            <div class="space-y-1">
+              <%= f.label :body, "Add private memo", class: "text-sm font-medium text-slate-700" %>
+              <%= f.text_area :body,
+                              rows: 3,
+                              placeholder: "Use this space to capture coaching notes for fellow teachers.",
+                              class: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" %>
+            </div>
+            <div class="flex justify-end">
+              <%= f.submit "Save memo", class: "rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700" %>
+            </div>
+          <% end %>
+        </div>
+      </section>
+
+      <section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-100 px-5 py-4">
+          <h2 class="text-lg font-semibold text-slate-900">AI insights</h2>
+        </div>
+        <div class="space-y-2 p-5 text-sm text-slate-600">
+          <p><span class="font-medium text-slate-800">AI score:</span> <%= @submission.ai_score.present? ? @submission.ai_score : "n/a" %></p>
+          <p class="whitespace-pre-wrap"><span class="font-medium text-slate-800">Summary:</span> <%= @submission.ai_summary.presence || "No AI summary provided." %></p>
+        </div>
+      </section>
+    </aside>
+  </div>
+</section>

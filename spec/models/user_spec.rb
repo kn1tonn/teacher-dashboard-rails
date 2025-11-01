@@ -1,7 +1,8 @@
 require "rails_helper"
+require "securerandom"
 
 RSpec.describe User, type: :model do
-  subject(:user) { build(:user) }
+  subject(:user) { build(:user, email: "user-model-#{SecureRandom.hex(4)}@example.com") }
 
   it "is valid with default attributes" do
     expect(user).to be_valid
@@ -19,12 +20,14 @@ RSpec.describe User, type: :model do
   end
 
   describe ".from_omniauth" do
+    let(:auth_email) { "teacher-#{SecureRandom.hex(4)}@example.com" }
+
     let(:auth_hash) do
       OmniAuth::AuthHash.new(
         provider: "google_oauth2",
         uid: "123456789",
         info: OmniAuth::AuthHash::InfoHash.new(
-          email: "teacher@example.com",
+          email: auth_email,
           name: "Sample Teacher"
         )
       )
@@ -36,7 +39,7 @@ RSpec.describe User, type: :model do
     end
 
     it "returns the existing user when provider/uid already stored" do
-      existing_user = create(:user, provider: "google_oauth2", uid: "123456789")
+      existing_user = create(:user, provider: "google_oauth2", uid: "123456789", email: auth_email)
 
       expect(described_class.from_omniauth(auth_hash)).to eq(existing_user)
     end

@@ -1,10 +1,164 @@
-<section class="w-full space-y-6">
-  <header class="flex flex-col gap-1">
-    <h1 class="text-2xl font-semibold text-slate-900">Student Dashboard</h1>
-    <p class="text-sm text-slate-600">Track your weekly assignments and feedback history.</p>
+<section class="space-y-10">
+  <header class="space-y-2">
+    <h1 class="text-2xl font-semibold text-slate-900">Welcome back, <%= current_user.name %></h1>
+    <p class="text-sm text-slate-600">Review this week&#39;s assignments, submit your work, and keep track of feedback in one place.</p>
   </header>
 
-  <div class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-slate-600">
-    Submission list, status pills, and feedback timeline will appear here once implemented.
-  </div>
+  <section class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-semibold text-slate-900">This Week&#39;s Tasks</h2>
+      <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Stay on top of upcoming deadlines</p>
+    </div>
+
+    <% if @tasks.blank? %>
+      <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-slate-500">
+        No active tasks have been assigned yet. Check back soon!
+      </div>
+    <% else %>
+      <div class="space-y-4">
+        <% @tasks.each do |task| %>
+          <% submission = @submissions_by_task[task.id] %>
+          <% status = submission&.status || "not_submitted" %>
+          <article class="rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div class="flex flex-col gap-2 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900"><%= task.title %></h3>
+                <p class="text-sm text-slate-600"><%= task.description.presence || "No description provided." %></p>
+              </div>
+              <div class="flex flex-col items-start gap-2 sm:items-end">
+                <%= submission_status_badge(status) %>
+                <% if task.due_on.present? %>
+                  <p class="text-xs text-slate-500">Due <%= task.due_on.strftime("%b %-d, %Y") %></p>
+                <% else %>
+                  <p class="text-xs text-slate-500">No due date</p>
+                <% end %>
+                <% if submission&.submitted_at.present? %>
+                  <p class="text-xs text-slate-500">Last submitted <%= time_ago_in_words(submission.submitted_at) %> ago</p>
+                <% end %>
+              </div>
+            </div>
+
+            <div class="grid gap-6 p-4 md:grid-cols-[2fr_1fr]">
+              <div class="space-y-3">
+                <%= form_with scope: :submission, url: submissions_path, method: :post, local: true, class: "space-y-3" do |f| %>
+                  <%= hidden_field_tag "submission[task_id]", task.id %>
+
+                  <div class="space-y-1">
+                    <%= f.label :content, "Write or paste your work", class: "text-sm font-medium text-slate-700" %>
+                    <%= f.text_area :content,
+                                    value: submission&.content,
+                                    rows: 4,
+                                    placeholder: "Share your reflection, essay, or response...",
+                                    class: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" %>
+                  </div>
+
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs">
+                      <%= f.label :content_url, "Or submit a link", class: "font-medium text-slate-700" %>
+                      <span class="text-slate-500">Google Docs, audio, or video links are welcome</span>
+                    </div>
+                    <%= f.text_field :content_url,
+                                     value: submission&.content_url,
+                                     placeholder: "https://...",
+                                     class: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" %>
+                  </div>
+
+                  <div class="flex items-center justify-end gap-3">
+                    <% if submission.present? %>
+                      <p class="text-xs text-slate-500">Re-submit to update your work.</p>
+                    <% else %>
+                      <p class="text-xs text-slate-500">Once submitted, your teacher will review it.</p>
+                    <% end %>
+                    <%= f.submit(submission.present? ? "Update submission" : "Submit task", class: "rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500") %>
+                  </div>
+                <% end %>
+              </div>
+
+              <div class="space-y-2 rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
+                <p class="font-medium text-slate-800">Tips</p>
+                <ul class="list-disc space-y-1 pl-5">
+                  <li>You can submit either written content or a link.</li>
+                  <li>Re-submit anytime to replace your previous work.</li>
+                  <li>Status updates will appear here as your work progresses.</li>
+                </ul>
+              </div>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
+
+  <section id="feedback-history" class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-semibold text-slate-900">Feedback &amp; Personal Notes</h2>
+      <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Reflect and plan next steps</p>
+    </div>
+
+    <% if @submissions_with_feedback.blank? %>
+      <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-slate-500">
+        You&#39;ll see teacher feedback here once your work has been reviewed.
+      </div>
+    <% else %>
+      <div class="space-y-4">
+        <% @submissions_with_feedback.each do |submission| %>
+          <article class="rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div class="flex flex-col gap-2 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 class="text-lg font-semibold text-slate-900"><%= submission.task.title %></h3>
+                <p class="text-sm text-slate-600">Submitted <%= submission.submitted_at.present? ? submission.submitted_at.strftime("%b %-d, %Y") : "n/a" %></p>
+              </div>
+              <div class="flex flex-col items-start gap-2 sm:items-end">
+                <%= submission_status_badge(submission.status) %>
+                <% if submission.feedback&.published_at.present? %>
+                  <p class="text-xs text-slate-500">Feedback published <%= submission.feedback.published_at.strftime("%b %-d, %Y") %></p>
+                <% end %>
+              </div>
+            </div>
+
+            <div class="space-y-4 p-4">
+              <div class="rounded-lg bg-indigo-50 p-4 text-sm text-indigo-900">
+                <p class="font-semibold">Teacher feedback</p>
+                <p class="mt-1 whitespace-pre-wrap"><%= submission.feedback.teacher_comment.presence || "No comments provided." %></p>
+              </div>
+
+              <% personal_memos = submission.memos.student_self.where(user: current_user).order(created_at: :desc) %>
+
+              <div class="space-y-3">
+                <p class="text-sm font-semibold text-slate-800">Your personal memos</p>
+                <% if personal_memos.blank? %>
+                  <p class="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-3 text-sm text-slate-500">Add notes to keep track of what you want to improve next.</p>
+                <% else %>
+                  <ul class="space-y-2">
+                    <% personal_memos.each do |memo| %>
+                      <li class="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700 shadow-sm">
+                        <p class="whitespace-pre-wrap"><%= memo.body %></p>
+                        <p class="mt-1 text-xs text-slate-400">Saved <%= time_ago_in_words(memo.created_at) %> ago</p>
+                      </li>
+                    <% end %>
+                  </ul>
+                <% end %>
+              </div>
+
+              <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-inner">
+                <%= form_with scope: :memo, url: memos_path, method: :post, local: true, class: "space-y-3" do |f| %>
+                  <%= hidden_field_tag "memo[submission_id]", submission.id %>
+                  <div class="space-y-1">
+                    <%= f.label :body, "Add a personal memo", class: "text-sm font-medium text-slate-700" %>
+                    <%= f.text_area :body,
+                                    rows: 3,
+                                    placeholder: "What do you want to remember for next time?",
+                                    class: "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" %>
+                  </div>
+                  <div class="flex justify-end">
+                    <%= f.submit "Save memo", class: "rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700" %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    <% end %>
+  </section>
 </section>
