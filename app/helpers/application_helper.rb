@@ -4,7 +4,7 @@ module ApplicationHelper
     return if raw_url.blank?
     url = raw_url.to_s.strip
     uri = URI.parse(url)
-    return url if uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
+    url if uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
   rescue URI::InvalidURIError
     nil
   end
